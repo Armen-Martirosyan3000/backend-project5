@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update</title>
+</head>
+<body>
+    
+    <form onsubmit="save(); return false;">
+        <input id="id" type="text" name="id" placeholder="id"/><br/>
+        <input id="name" type="text" name="name" placeholder="Write your name"/><br/>
+        <input id="surname" type="text" name="surname" placeholder="Write your surname"/><br/>
+		<input id="salary" type="text" name="salary" placeholder="Write your salary"/><br/>
+        <button type="submit">Update</button>
+    </form>
+
+    <script>
+        function save() {
+            const id = document.querySelector("#id").value;
+            const name = document.querySelector("#name").value;
+            const surname = document.querySelector("#surname").value;
+			const salary = document.querySelector("#salary").value;
+
+            fetch(`/workers/${id}`, {//օգտագործելով  fetch հաճախորդը ուղարկում է /workers/${id}, սա՝${id} այն աշխատողի id-ն է որը նա ուզում է փոխել 
+                method  : "PUT",//մեթոդը PUT է
+                headers : {//headers-ով ասում ենք որ json ենք ուղարկում
+                    "Content-Type" : "application/json"
+                },
+                body    : JSON.stringify({//ստեղ այն JSON-ն է որով ուզում ենք փոխենք, թարմացնենք։ Այսինքն ստեղ արդեն տվյալ աշխատողի փոփոխված տվյալներն է, դա ուղարկվում է սերվերին որ սերվերը փոխի և պահպանի նոր տվյալները տվյալ աշխատողի
+                    id,
+                    name,
+                    surname,
+					salary
+                })
+            })
+                .then((resp) => console.log("yay"))
+                .catch((err) => console.log(err));
+        }
+    </script>
+</body>
+</html>

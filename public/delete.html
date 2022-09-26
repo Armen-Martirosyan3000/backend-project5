@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete</title>
+</head>
+<body>
+    <form onsubmit="save(); return false;">
+        <input id="id" type="text" name="id" placeholder="id"/><br/>
+        <button type="submit">Delete</button>
+    </form>
+
+    <script>
+        function save() {
+            const id = document.querySelector("#id").value;
+            
+            fetch(`/workers/${id}`, {//fetch-ով փոխանցում ենք այն աշխատողի ${id}-ն որ մենք ուզում ենք ջնջենք 
+                method  : "DELETE"//որպես մեթոդ ասում ենք որ ուզում ենք DELETE ուղարկենք
+            })
+                .then((resp) => console.log("yay"))
+                .catch((err) => console.log(err));
+        }
+    </script>
+</body>
+</html>
