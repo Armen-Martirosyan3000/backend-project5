@@ -1,70 +1,71 @@
 import express from "express";
-// ??? որ դեպքում են սա գրում որ դեպքում import-ով const express = require('express')
-const app=express();
+import sqlite3 from "sqlite3";
+const app = express();
+const db = new sqlite3.Database('data.db');
+db.run("CREATE TABLE IF NOT EXISTS workers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT VARCHAR(255) NOT NULL, surname TEXT VARCHAR(255) NOT NULL, salary INTEGER NOT NULL)");
+app.use(express.json());//express.json() is a middleware function-express.json()-ը middleware ծրագրային ֆունկցիա է Express-ում, որը վերլուծում(parse) է ուղարկված body-ն JSON ֆորմատով։ 
 
-let workers = {};//աշխատողներին(worker) մենք պահում ենք այս օբյեկտի մեջ
 
-  app.use(express.static("public"));// սա express-ից ստացվող Middleware ֆունկցիան է, որպեսզի static(Ստատիկ ֆայլերը սովորաբար ֆայլեր են, ինչպիսիք են HTML-ը, CSS-ը, պատկերները, JavaScript-ը և այլն, որոնք չեն ստեղծվում սերվերի կողմից, բայց պետք է ուղարկվեն բրաուզերին, երբ պահանջվում է) ֆայլեր մատուցի։Այս Middleware կստուգի եթե եկած խնդրանքը դեպի ինչ որ ֆայլ է ոը գտնվում է public պապկայի մեջ եթե այո անմիջապես ուղղարկում է եթե ոչ շարունակում է աշխատացնել իրենից ներքև գտնվող կոդերը։ 
-  // ??? որ դեպքում են bodyParser.json()-ով գրում որ դեպքում app.use(express.json())
-  app.use(express.json());//Այս middleware-ը վերլուծում(parse) է body-ն ուղարկված JSON ֆորմատով։ սա՝ express.json() -ը middleware ծրագրային ֆունկցիա է Express-ում։Այս մեթոդը օգտագործվում է մուտքային հարցումները JSON ծանրաբեռնվածությամբ վերլուծելու համար և հիմնված է bodyparser-ի(body-parser-ը npm մոդուլ է, որն օգտագործվում է HTTP հարցման մարմնում ուղարկված տվյալները մշակելու համար: Այն տրամադրում է չորս express middleware ծրագիր HTTP հարցման body-իի վրա՝ JSON, Text, URL-encoded(կոդավորված),raw data sets(չմշակված տվյալների հավաքածուներ)) վերլուծելու համար:middleware ֆունկցիա է որը (գործարկվում) այն ժամանակ, երբ սերվերը ստանում է հարցում հաճախորդից և երբ այն պատասխան է ուղարկում հաճախորդին:Express.json()-ն ակնկալում է, որ հարցումի տվյալները կուղարկվեն JSON ձևաչափով, որը հաճախ նման է պարզ JS օբյեկտի:
-  //(express.json()) և app.use(express.urlencoded) դրանք մեզ անհրաժեշտ են միայն POST և PUT հարցումների կամ ցանկացած ելքային հարցումների համար, որոնք պարունակում են տվյալներ: Դրանք անհրաժեշտ չեն GET կամ DELETE հարցումների համար:
-  //express.json()և express.urlencoded()օգտակար էքսպրես միջին ծրագրաշարի վերլուծիչ գործառույթներ են, որոնք թույլ են տալիս վերլուծել ելքային հարցումների տվյալները՝ կախված սերվերին ուղարկվող տվյալների կոդավորումից:
-  app.use(express.urlencoded({//Այս middleware-ը վերլուծում(parse) է body-ն եթե ինֆորմացիան ուղարկված է ֆորմաներով։ Express.urlencoded()-ն ակնկալում է, որ հարցումների տվյալները կոդավորված կուղարկվեն URL-ում, սովորաբար տողերով կամ զանգվածներով։
-	extended: true// ??? Երբ դրված է true, ապա փչված (սեղմված) մարմինները կփքվեն. երբ false, ցրված մարմինները մերժվում են: 
-  }));
 
-  
-
-  // CREATE
-app.post("/workers", (req, res) => {//խնդանքը գալիս է app.post-ի միջոցով։Այս՝ /workers path-ի համար ավելացնում ենք այս rout-ը(ֆունկցիան) (req, res) => {onst id = `worker_${Date.now()}_${Math.random()}`;որպեսզի post արվի այս՝ /workers path-ին կանչվի այս ֆունկցիան
-  const id = `worker_${Date.now()}_${Math.random()}`;//նոր worker-ի(աշխատակից) համար ստեղծում ենք նոր id։ դատա բազայով աշխատելիս այս id-ն ստեղծում է հենց դատաբազան:Ստատիկ Date.now()մեթոդը վերադարձնում է 1970 թվականի հունվարի 1-ից 00:00:00 UTC անցած միլիվայրկյանների թիվը:
-  const newWorker = {//այս օբյեկտում ստեղծվում է նոր worker-ի(աշխատակից) մասին ինֆորմացիան, ավելացնում ենք այն մեր տվյալների բազայի մեջ ու հաճախորդին պատասխան ուղարկենք որ ամեն ինչ լավ է և մենք նոր աշխատողին ավելացրեցինք
-      id,//այստեղ տեղադրվում է վերևում ստեղծված id-ի կոդը որի միջոցով տվյալ մարդը կտարբերակվի մյուս մարդկանց մասին կազմված օբյեկտներից։ Այս նոր ստեղծված id-ն հետ է ուղղարկվում հաճախորդին
-      ...req.body// սրանով կարդում և ստանում ենք այն ինֆորմացիան որը որ մեզ եկել է, որը արդեն parse(վերլուծած) արված է, որովհետև մենք օհտագործել ենք  app.use(express.json()) middleware-ը
-  };
-
-  workers[id] = newWorker;// այդ նոր աշխատողի մասին ինֆորմացիան ավելացմում ենք վերևում ստեղծված դատարկ workers օբյեկտի մեջ որի բանալին է id։
-  res.send(newWorker);// սրանով մենք ուղղարկվում է նոր աշխատակցի մասին ինֆորմացիա պարունակող օբյեկտը հաճախորդին
+// CREATE
+app.post("/workers", (req, res) => {//here request comes through app.post-այստեղ խնդանքը(request) գալիս է app.post-ի միջոցով
+  let name = req.body["name"]
+  let surname = req.body["surname"]
+  let salary = req.body["salary"]
+  db.run("INSERT INTO workers( name,surname, salary) VALUES(?,?,?)", name, surname, salary)
+  res.send(JSON.stringify({ massage: "a new workers has been added" })); //We send a response to the client in JSON format-JSON ֆորմատով պատասխան ենք ուղարկում հաճախորդին`"a new workers has been added"                           
 });
 
-//READ-հաճախորդի մասում նեռառված է այս կոդը՝ 
-// fetch(`/workers/1`)//READ-ը հիմնականում իրականացվում է http get-ով, get-ի ժամանակ եթե fetch-ը կանչում եք ու ինչ որ հատուկ բաներ չեք ասում ինքը ենթադրում է որ ի նկատի ունեք http get: Այստեղ՝/workers/1 , 1-ը id-ն է այն աշխատողի (worker) որ ես ուզում եմ ստանալ
-// .then((resp)=>resp.json())// և այդ ժամանակ ինքը ուղարկում է այդ worker-ին(աշխատակից) որը JSON-ի տեսքով է գալիս, resp.json() է արվում որպեսզի վերածենք JSON-ի
-// .then((data)=>console.log(data))// հետո ստանում ենք այդ data-ն ու այդ data-ով ինչ ուզում ենք կարող ենք անել, տպել էկրանին և այլն
-// .catch((err)=>console.log(err)); 
-// որպես հաճախորդից ստացվող կոդ սակայն սրա համար առանձին read.html չի ստեղծվել
-//READ-սերվերի մաս
-app.get("/workers/:id", (req, res) => {// այստեղ app.get-է որովհետև հաճախորդից եկածի մեթոդը get է։ :id նշանակում է որ այդտեղի(:id-պարամետր) արժեքը փոփոխական է և ցանկացած արժեք կարող է գալ այդտեղ։Եվ այդ արժեքը մենք կարող ենք կարդանք հետևյալ ձևով՝req.params.id ու սա կբերի այն ինֆորմացիան որ եկել է այստեղ՝ :id-ով,  :id-ն ընդունում է այն արժեքը որը որ մեզ փոխանցում են այստեղից՝fetch(`/workers/1`) տվյալ դեպքում փոխանցվել է 1, որից հետո սերվերը գնում ման է գալիս այն աշխատողին որն ունի այդ id-ն ու res.send-ով հետ է ուղարկում հաճախորդին
-  const worker = workers[req.params.id];// ասյտեղ տեղծում ենք worker փոփոխականը, որտեղ անում ենք՝ workers[req.params.id] որպեսզի փորձենք այդ id-ով ստանանք տվյալ աշխատողին(worker)
-  if(worker === undefined) {// եթե չկա այդ id-ով աշխատակիցը, եթե այդ id-ով ոչ մի աշխատակից գոյություն չունի մենք ուղարկում ենք սա՝res.status(404).send('Worker not found') այսինքն այդ աշխատողին չգտա
-      res.status(404).send('Worker not found');
-  } else {//հակառակ դեպքում եթե գտնում եմ այդ id-ով աշխատակցին, այդ ժամանակ սերվերը հետ է ուղարկում հաճախորդին տվյալ id-ով գտնված աշխատողին՝res.send(worker)։ Պետք է հիշել երբ որ մենք հետ ենք ուղարկում օբյեկտ ․send-ով այդ օբյեկտը հետո դառնում է JSON
-      res.send(worker);
-  }
+
+//Օverall READ
+app.get("/workers", (req, res, next) => {
+  db.all("SELECT * FROM workers", [], (err, rows) => {
+    if (err) {
+      res.status(400).json({ "error": err.message });
+      return;
+    }
+    res.status(200).json( rows );
+  });
 });
 
+
+//Row READ
+app.get("/workers/:id", (req, res) => {//:id is a parameter-:id նշանակում է որ այդտեղի արժեքը փոփոխական պարամետր է։Եվ այդ արժեքը մենք կարող ենք կարդանք հետևյալ ձևով՝req.params.id, :id-ն ընդունում է այն արժեքը որը որ մեզ փոխանցում է հաճախորդը՝fetch(`/workers/10`) տվյալ դեպքում փոխանցվել է 10, որից հետո սերվերը փնտրում է այն աշխատողին որն ունի այդ id-ն
+  db.get(`SELECT * FROM workers where id = ?`, [req.params.id], (err, row) => {//db.get ֆունկցիայի առաջին պարամետրը՝SELECT * FROM workers where id = ? ասում է workers table-ի(data.db-ում ստեղծված) միջից գտի id որի արժեքը երկրորդ պարամետրով սահմանում է՝ [req.params.id] որը հավասար է տվյալ դեպքում 10՝ localhost :3000/workers/10 ու որպես 3-րդ պարամետր տալիս է՝ (err, row) callback ֆունկցիան, որտեղ err-ն error է նշանակում(որը տվյալ դեպքում ասեցին որ այս դեպքում դժվար հանդիպի), իսկ row-ն տվյալ դեպքում 10(localhost :3000/workers/10) արժեք ունեցող տողն է workers table-ում
+    if (err) {
+      res.status(400).json({ "error": err.message });//err.message is a defined message-err.message-ը սահմանված հաղորդագրություն է
+      return;
+    }
+    res.status(200).json(row);//The row with the given id in the workers table is sent to the client as a response-workers table-ում տվյալ id-ով տողը պատասխանով(response) հետ է ուղարկվում հաճախորդին
+  });
+});
 
 
 // UPDATE
-app.put("/workers/:id", (req, res) => {//:id նշանակում է որ այդտեղի(:id-պարամետր) արժեքը փոփոխական է և ցանկացած արժեք կարող է գալ այդտեղ։Եվ այդ արժեքը մենք կարող ենք կարդանք հետևյալ ձևով՝req.params.id ու սա կբերի այն ինֆորմացիան որ եկել է այստեղ՝ :id-ով
-  const worker = workers[req.params.id];//այս՝ :id-ով ստանում ենք տվյալ աշխատողի հին(նախկին) տվյալները
-  if(worker === undefined) {//ստեղ ստուգում ենք արդյոք գոյություն ունի տվյալ աշխատողը
-      res.status(404).send('Worker not found');//եթե գոյություն չունի այս տեքստն ենք ուղարկում
-  } else {//հակառակ դեպքում եթե կա 
-      const updatedworker = req.body; //ստեղծում ենք updatedworker փոփոխականը որին վերագրում ենք հաճախորդի կողմից(update.html) ուղարկված որը body-ով եկել է
-      workers[req.params.id] = updatedworker;//այստեղով մենք փոխում ենք  workers օբյեկտի մեջ, այս՝[req.params.id](սա օբյեկտի բանալին է, key) id-ով աշխատողի տվյալները, այսինքն վերագրում ենք նոր տվյալները որը արդեն այս՝updatedworker փոփոխականի մեջ է
-      res.send(updatedworker);// Եվ այստեղով կրկին հետ ենք ուղարկում արդեն նոր թարմացված տվյալները տվյալ աշխատողի, հետ ենք ուղարկում որպեսզի դատա բազայի միջի տվյալները ամբողջովին նույնը լինի հաճախորդի մոտի տվյալների հետ
-  }
+app.put("/workers/:id", (req, res) => {
+  db.run(`UPDATE workers set name = ?, surname = ?, salary = ? WHERE id = ?`,
+    [req.body.name, req.body.surname, req.body.salary, req.params.id],//array
+    function (err, result) {
+      if (err) {
+        res.status(400).json({ "error": res.message })//res.message-ը սահմանված հաղորդագրություն է "error"-ի դեպքում
+        return;
+      }
+      res.status(200).json({ updatedID: this.changes });//this.changes is set to 0 or 1-this.changes-ը սահմանված է 0 կամ 1  
+      console.log(this.changes)
+    });
 });
 
+
 // DELETE
-app.delete("/workers/:id", (req, res) => {//այստեղ անում ենք app.delete որովհետև մեթոդը delete է
-  const worker = workers[req.params.id];//:id-ով եկած արժեքը մենք կարող ենք կարդանք հետևյալ ձևով՝ req.params.id ու սա կբերի այն ինֆորմացիան որ եկել է այստեղ՝ :id-ով
-  if(worker === undefined) {// ստեղ կրկին ստուգում ենք եթե չկա այդ աշխատողը
-      res.status(404).send('Worker not found');// ուղարկում ենք այս տեքստը՝ 'Worker not found'
-  } else {
-      delete workers[req.params.id];// իսկ եթե կա ջնջում ենք
-      res.send();// և ջնջելուց հետո ուղարկում ենք հաճախորդին որ ամեն ին նորմալ է, այսինքն ջնջված է
-  }
+app.delete("/workers/:id", (req, res) => {
+  db.run(`DELETE FROM workers WHERE id = ?`,
+    req.params.id,
+    function (err, result) {
+      if (err) {
+        res.status(400).json({ "error": res.message })
+        return;
+      }
+      res.status(200).json({ deletedID: this.changes })
+    });
 });
 app.listen(3000);
