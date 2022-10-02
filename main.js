@@ -28,7 +28,7 @@ app.get("/workers", (req, res) => {
       res.status(400).json({ "error": err.message });
       return;
     }
-    res.status(200).json( rows );
+    res.status(200).json(rows);
   });
 });
 
