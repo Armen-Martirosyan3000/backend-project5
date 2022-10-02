@@ -1,6 +1,10 @@
 import express from "express";
 import sqlite3 from "sqlite3";
+import cors from "cors";
+
+
 const app = express();
+app.use(cors());
 const db = new sqlite3.Database('data.db');
 db.run("CREATE TABLE IF NOT EXISTS workers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT VARCHAR(255) NOT NULL, surname TEXT VARCHAR(255) NOT NULL, salary INTEGER NOT NULL)");
 app.use(express.json());//express.json() is a middleware function-express.json()-ը middleware ծրագրային ֆունկցիա է Express-ում, որը վերլուծում(parse) է ուղարկված body-ն JSON ֆորմատով։ 
@@ -18,8 +22,8 @@ app.post("/workers", (req, res) => {//here request comes through app.post-այս
 
 
 //Օverall READ
-app.get("/workers", (req, res, next) => {
-  db.all("SELECT * FROM workers", [], (err, rows) => {
+app.get("/workers", (req, res) => {
+  db.all("SELECT * FROM workers", (err, rows) => {
     if (err) {
       res.status(400).json({ "error": err.message });
       return;
@@ -51,7 +55,6 @@ app.put("/workers/:id", (req, res) => {
         return;
       }
       res.status(200).json({ updatedID: this.changes });//this.changes is set to 0 or 1-this.changes-ը սահմանված է 0 կամ 1  
-      console.log(this.changes)
     });
 });
 
@@ -68,4 +71,4 @@ app.delete("/workers/:id", (req, res) => {
       res.status(200).json({ deletedID: this.changes })
     });
 });
-app.listen(3000);
+app.listen(3200);
