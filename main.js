@@ -4,11 +4,10 @@ import cors from "cors";
 
 
 const app = express();
-app.use(cors());
+app.use(cors());//cors-ը թույլ է տալիս վերցնել http data(առանց cors-ի թույլ չի տրվում)
 const db = new sqlite3.Database('data.db');
 db.run("CREATE TABLE IF NOT EXISTS workers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT VARCHAR(255) NOT NULL, surname TEXT VARCHAR(255) NOT NULL, salary INTEGER NOT NULL)");
 app.use(express.json());//express.json() is a middleware function-express.json()-ը middleware ծրագրային ֆունկցիա է Express-ում, որը վերլուծում(parse) է ուղարկված body-ն JSON ֆորմատով։ 
-
 
 
 // CREATE
