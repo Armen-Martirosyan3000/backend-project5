@@ -1,3 +1,4 @@
+//package.json-ում ավելացնում ենք "type": "module",
 import express from "express";
 import sqlite3 from "sqlite3";
 import cors from "cors";
@@ -12,9 +13,10 @@ app.use(express.json());//express.json() is a middleware function-express.json()
 
 // CREATE
 app.post("/workers", (req, res) => {//here request comes through app.post-այստեղ խնդանքը(request) գալիս է app.post-ի միջոցով
-  let name = req.body["name"]
-  let surname = req.body["surname"]
-  let salary = req.body["salary"]
+  // console.log(req.body,777777)
+  let name = req.body.userData1["name"]
+  let surname = req.body.userData1["surname"]
+  let salary = req.body.userData1["salary"]
   db.run("INSERT INTO workers( name,surname, salary) VALUES(?,?,?)", name, surname, salary)
   res.send(JSON.stringify({ massage: "a new workers has been added" })); //We send a response to the client in JSON format-JSON ֆորմատով պատասխան ենք ուղարկում հաճախորդին`"a new workers has been added"                           
 });
@@ -46,8 +48,9 @@ app.get("/workers/:id", (req, res) => {//:id is a parameter-:id նշանակու
 
 // UPDATE
 app.put("/workers/:id", (req, res) => {
+  // console.log(req, 55555);
   db.run(`UPDATE workers set name = ?, surname = ?, salary = ? WHERE id = ?`,
-    [req.body.name, req.body.surname, req.body.salary, req.params.id],//array
+    [req.body.userData.name, req.body.userData.surname, req.body.userData.salary, req.params.id],//array
     function (err, result) {
       if (err) {
         res.status(400).json({ "error": res.message })//res.message-ը սահմանված հաղորդագրություն է "error"-ի դեպքում
